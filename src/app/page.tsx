@@ -1,103 +1,257 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { PdfViewer, PdfViewerSelection, PdfViewerPageList, PdfViewerSelectionArea, PdfViewerSelectionClear, SelectionProps, PdfViewerHighlight, PdfViewerInteractiveArea, PdfViewerHeader, PdfViewerFooter, PdfViewerZoomIn, PdfViewerZoomOut, PdfViewerZoom, PdfViewerPaginationNext, PdfViewerPaginationBack, PdfViewerNavigateToHighlightAction, PdfViewerThumbnailsList, PdfViewerThumbnailItem, PdfViewerBookmarksList, PdfViewerBookmarksListItem } from "@/components/ui/pdf-viewer";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Textarea } from "@/components/ui/textarea";
+import { BookmarkIcon, ChevronLeftIcon, ChevronRightIcon, GalleryThumbnailsIcon, MessageCircleIcon, MessageSquareIcon, ZoomInIcon, ZoomOutIcon } from "lucide-react";
+import { FC, useCallback, useState } from "react";
+
+interface Note extends SelectionProps {
+  text: string
+}
+
+export default function Page() {
+  const [notes, setNotes] = useState<Note[]>([]);
+
+  const [selection, setSelection] = useState<SelectionProps | undefined>(undefined);
+
+  const handleAddNote = (note: Note) => {
+    setNotes((prevState) => [...prevState, note]);
+    setSelection(undefined)
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <PdfViewer file="/investment-memo.pdf" mode="multiple" scrollOffset={110} >
+      <PdfViewerHeader className="items-center justify-between">
+        <div className="flex items-center gap-2">
+          <ThumbnailsSheet />
+          <OutlinesSheet />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+
+        <div className="flex items-center gap-2">
+          <NotesSheet notes={notes} />
+
+          <PdfViewerPaginationBack asChild>
+            <Button size="icon" variant="outline">
+              <ChevronLeftIcon />
+            </Button>
+          </PdfViewerPaginationBack>
+
+          <PdfViewerPaginationNext asChild>
+            <Button size="icon" variant="outline">
+              <ChevronRightIcon />
+            </Button>
+          </PdfViewerPaginationNext>
+
+          <PdfViewerZoomIn asChild>
+            <Button size="icon" variant="outline">
+              <ZoomInIcon />
+            </Button>
+          </PdfViewerZoomIn>
+
+          <PdfViewerZoom />
+
+          <PdfViewerZoomOut asChild>
+            <Button size="icon" variant="outline">
+              <ZoomOutIcon />
+            </Button>
+          </PdfViewerZoomOut>
+        </div>
+      </PdfViewerHeader>
+
+      <PdfViewerPageList onSelectionChange={setSelection}>
+        <PdfViewerSelection />
+        <PdfViewerSelectionArea>
+          <AddNote selection={selection} onAddNotes={handleAddNote} />
+        </PdfViewerSelectionArea>
+
+        {notes.map((item, index) => (
+          <Popover key={index}>
+            <PopoverTrigger asChild>
+              <PdfViewerHighlight page={item.page} coords={item.coords} className="cursor-pointer" />
+            </PopoverTrigger>
+            <PopoverContent className="p-0 outline border-none">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Adicionar comentário</CardTitle>
+                  <CardDescription>Adicionar um comentário a essa seleção</CardDescription>
+                </CardHeader>
+
+                <CardContent>
+                  <Textarea readOnly value={item.text} />
+                </CardContent>
+
+                <CardFooter className="space-x-4">
+                  <Button>Fechar</Button>
+                  <Button>Salvar</Button>
+                </CardFooter>
+              </Card>
+            </PopoverContent>
+          </Popover>
+        ))}
+      </PdfViewerPageList>
+      <PdfViewerFooter>
+        <h1>h1</h1>
+      </PdfViewerFooter>
+    </PdfViewer>
+  )
+}
+
+interface AddNoteProps {
+  selection: SelectionProps | undefined;
+  onAddNotes: (note: Note) => void
+}
+
+const AddNote: FC<AddNoteProps> = ({ selection, onAddNotes }) => {
+  const [open, setIsOpen] = useState(false)
+  const [text, setText] = useState<string>("");
+
+  const handleAddNote = useCallback(() => {
+    setIsOpen(false)
+
+    if (!selection) return
+
+    onAddNotes({
+      ...selection,
+      text
+    })
+  }, [onAddNotes, selection, text])
+
+  return (
+    <Popover open={open} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="icon">
+          <MessageSquareIcon />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="p-0 outline border-none">
+        <PdfViewerInteractiveArea>
+          <Card>
+            <CardHeader>
+              <CardTitle>Adicionar comentário</CardTitle>
+              <CardDescription>Adicionar um comentário a essa seleção</CardDescription>
+            </CardHeader>
+
+            <CardContent>
+              <Textarea value={text} onChange={e => setText(e.target.value)} />
+            </CardContent>
+
+            <CardFooter className="space-x-4">
+              <Button>Fechar</Button>
+              <PdfViewerSelectionClear asChild>
+                <Button onClick={handleAddNote}>Salvar</Button>
+              </PdfViewerSelectionClear>
+            </CardFooter>
+          </Card>
+        </PdfViewerInteractiveArea>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+interface NotesSheetProps {
+  notes: Note[]
+}
+
+const NotesSheet: FC<NotesSheetProps> = ({ notes }) => {
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button size="icon" variant="outline">
+          <MessageCircleIcon />
+        </Button>
+      </SheetTrigger>
+      <SheetContent>
+        <SheetHeader>
+          <SheetTitle>Notas</SheetTitle>
+          <SheetDescription>Notas do documento</SheetDescription>
+        </SheetHeader>
+
+        <div className="px-4 space-y-4">
+          {notes.map((item, index) => (
+            <Card key={index}>
+              <CardHeader>
+                <CardTitle>
+                  Nota
+                </CardTitle>
+                <CardDescription>
+                  {item.content}
+                </CardDescription>
+              </CardHeader>
+
+              <CardFooter>
+                <PdfViewerNavigateToHighlightAction asChild page={item.page} coords={item.coords}>
+                  <SheetClose asChild>
+                    <Button>Navegar</Button>
+                  </SheetClose>
+                </PdfViewerNavigateToHighlightAction>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </SheetContent>
+    </Sheet>
+  )
+}
+
+const ThumbnailsSheet = () => {
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button size="icon" variant="outline">
+          <GalleryThumbnailsIcon />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="w-[280px] flex flex-col">
+        <SheetHeader>
+          <SheetTitle>Thumbnails</SheetTitle>
+          <SheetDescription>Thumbnails do documento</SheetDescription>
+        </SheetHeader>
+
+        <PdfViewerThumbnailsList
+          className="overflow-auto pb-8"
+          render={(pageNumber) => (
+            <SheetClose asChild>
+              <PdfViewerThumbnailItem pageNumber={pageNumber} />
+            </SheetClose>
+          )}
+        />
+      </SheetContent>
+    </Sheet>
+  )
+}
+
+const OutlinesSheet = () => {
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button size="icon" variant="outline">
+          <BookmarkIcon />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="flex flex-col">
+        <SheetHeader>
+          <SheetTitle>Thumbnails</SheetTitle>
+          <SheetDescription>Thumbnails do documento</SheetDescription>
+        </SheetHeader>
+
+        <PdfViewerBookmarksList
+          className="overflow-auto pb-8 space-y-2 px-4 flex flex-col items-start"
+          render={(bookmark) => (
+            <SheetClose asChild>
+              <PdfViewerBookmarksListItem bookmark={bookmark} asChild>
+                <Button variant="link">
+                  <BookmarkIcon />
+                  {bookmark.title}
+                </Button>
+              </PdfViewerBookmarksListItem>
+            </SheetClose>
+          )}
+        />
+      </SheetContent>
+    </Sheet>
+  )
 }
